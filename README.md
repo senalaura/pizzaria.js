@@ -9,7 +9,7 @@ Este projeto é uma aplicação web simples para gerenciamento de uma pizzaria. 
 1. **Clone o repositório:**
 
    ```bash
-   git clone https://github.com/gustavo-oliveira22/pizzaria.git
+   git clone :https://github.com/senalaura/pizzaria.js
    ```
 
 2. **Acesse o diretório do projeto:**
