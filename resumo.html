@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizzaria JS - Resumo do Pedido</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">    
+<script>
+    // Detecta toque prolongado (simulando recarregar)
+    let touchTimer;
+    document.addEventListener('touchstart', (e) => {
+        touchTimer = setTimeout(() => {
+            mensagemBloqueio.classList.add('destaque');
+            mensagemBloqueio.scrollIntoView({ behavior: 'smooth' });
+        }, 1000);
+    });
+
+    document.addEventListener('touchend', () => clearTimeout(touchTimer));
+</script>
+</head>
+<body>
+    <div class="container">
+        <div class="cabecalho">
+            <h1 class="titulo">Resumo do Pedido</h1>
+            <p class="subtitulo">Seu pedido está sendo preparado</p>
+        </div>
+
+        <div id="resumoPedido">
+            <div class="carregador"></div>
+        </div>
+
+        <div id="statusAtual" class="status-pedido-container">
+            <h3><i class="fas fa-sync-alt"></i> Status do Pedido</h3>
+            <div class="barra-progresso">
+                <div class="passo ${status >= 1 ? 'ativo' : ''}">
+                    <div class="bolha"></div>
+                    <span>Recebido</span>
+                </div>
+                <div class="linha ${status >= 2 ? 'ativo' : ''}"></div>
+                <div class="passo ${status >= 2 ? 'ativo' : ''}">
+                    <div class="bolha"></div>
+                    <span>Preparando</span>
+                </div>
+                <div class="linha ${status >= 3 ? 'ativo' : ''}"></div>
+                <div class="passo ${status >= 3 ? 'ativo' : ''}">
+                    <div class="bolha"></div>
+                    <span>Enviado</span>
+                </div>
+                <div class="linha ${status >= 4 ? 'ativo' : ''}"></div>
+                <div class="passo ${status >= 4 ? 'ativo' : ''}">
+                    <div class="bolha"></div>
+                    <span>Entregue</span>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            // Variável global para o ID do pedido atual
+            let pedidoId = null;
+            
+            // Função para atualizar o status
+            function atualizarStatusVisual(status) {
+                const steps = document.querySelectorAll('.passo');
+                const lines = document.querySelectorAll('.linha');
+                
+                steps.forEach((step, index) => {
+                    step.classList.toggle('ativo', index < status);
+                });
+                
+                lines.forEach((line, index) => {
+                    line.classList.toggle('ativo', index < status - 1);
+                });
+            }
+        
+            // Configurar atualização em tempo real
+            function configurarAtualizacaoTempoReal() {
+                if (typeof BroadcastChannel !== 'undefined') {
+                    const channel = new BroadcastChannel('atualizacao_status');
+                    
+                    channel.addEventListener('message', (event) => {
+                        if (event.data.id === pedidoId) {
+                            atualizarStatusVisual(converterStatusParaNumero(event.data.status));
+                            
+                            // Mostrar notificação
+                            const notificacao = document.createElement('div');
+                            notificacao.className = 'mensagem-feedback sucesso';
+                            notificacao.innerHTML = `
+                                <i class="fas fa-bell"></i> Status atualizado: ${event.data.status}
+                            `;
+                            document.querySelector('.container').prepend(notificacao);
+                            
+                            setTimeout(() => {
+                                notificacao.style.opacity = '0';
+                                setTimeout(() => notificacao.remove(), 500);
+                            }, 3000);
+                        }
+                    });
+                }
+            }
+        
+            // Converter status para número
+            function converterStatusParaNumero(status) {
+                const statusMap = {
+                    'RECEBIDO': 1,
+                    'PREPARANDO': 2,
+                    'ENVIADO': 3,
+                    'ENTREGUE': 4
+                };
+                return statusMap[status] || 1;
+            }
+        
+            // Inicialização
+            document.addEventListener('DOMContentLoaded', () => {
+                const pedido = JSON.parse(localStorage.getItem('pedidoAtual'));
+                if (pedido) {
+                    pedidoId = pedido.id;
+                    atualizarStatusVisual(converterStatusParaNumero(pedido.status));
+                    configurarAtualizacaoTempoReal();
+                }
+            });
+        </script>
+        
+        <div id="infoEntrega" style="display: none;">
+            <!-- Pizzas -->
+            <div id="pizzasResumo"></div>
+            
+            <!-- Bebida -->
+            <div class="item-resumo">
+                <span><i class="fas fa-glass-whiskey"></i> Bebida:</span>
+                <span id="bebidaResumo">-</span>
+            </div>
+            
+            <!-- Taxa e Total -->
+            <div class="item-resumo">
+                <span><i class="fas fa-truck"></i> Taxa de entrega:</span>
+                <span id="taxaEntregaResumo">R$ 0,00</span>
+            </div>
+            <div class="item-resumo resumo-total">
+                <span><i class="fas fa-receipt"></i> Total:</span>
+                <span id="totalResumo">R$ 0,00</span>
+            </div>
+            <div class="item-resumo">
+                <span><i class="fas fa-clock"></i> Tempo estimado:</span>
+                <span id="tempoEntrega">-</span>
+            </div>
+        </div>
+
+        <div id="mensagemConfirmacao" class="mensagem-feedback sucesso" style="display: none;"></div>
+
+        <a href="index.html" class="botao principal">
+            <i class="fas fa-home"></i> Voltar ao início
+        </a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const pedido = JSON.parse(localStorage.getItem('pedidoAtual'));
+            
+            if (!pedido) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            setTimeout(() => {
+                document.querySelector('.carregador').style.display = 'none';
+                document.getElementById('infoEntrega').style.display = 'block';
+
+                // Preencher pizzas
+                const pizzasContainer = document.getElementById('pizzasResumo');
+                pizzasContainer.innerHTML = '<h3 style="margin-bottom: 1rem;"><i class="fas fa-pizza-slice"></i> Pizzas</h3>';
+                
+                pedido.pizzas.forEach((pizza, index) => {
+                    const pizzaDiv = document.createElement('div');
+                    pizzaDiv.className = 'card-pizza';
+                    pizzaDiv.innerHTML = `
+                        <h4>Pizza ${index + 1}</h4>
+                        <div class="item-resumo">
+                            <span>Sabor:</span>
+                            <span>${pizza.sabor}</span>
+                        </div>
+                        <div class="item-resumo">
+                            <span>Tamanho:</span>
+                            <span>${pizza.tamanho}</span>
+                        </div>
+                        <div class="item-resumo">
+                            <span>Borda:</span>
+                            <span>${pizza.borda}</span>
+                        </div>
+                        <div class="item-resumo">
+                            <span>Preço:</span>
+                            <span>R$ ${pizza.preco}</span>
+                        </div>
+                    `;
+                    pizzasContainer.appendChild(pizzaDiv);
+                });
+
+                // Preencher demais informações
+                document.getElementById('bebidaResumo').textContent = 
+                    `${pedido.bebida.nome} (R$ ${pedido.bebida.preco})`;
+                document.getElementById('taxaEntregaResumo').textContent = 
+                    `R$ ${pedido.taxaEntrega}`;
+                document.getElementById('totalResumo').textContent = 
+                    `R$ ${pedido.total}`;
+                document.getElementById('tempoEntrega').textContent = 
+                    `${pedido.tempoEntrega} minutos`;
+
+                // Mensagem de confirmação
+                const mensagem = document.getElementById('mensagemConfirmacao');
+                mensagem.textContent = `Pedido #${pedido.id.toString().slice(-4)} confirmado! Entregaremos em ${pedido.cidade} em aproximadamente ${pedido.tempoEntrega} minutos.`;
+                mensagem.style.display = 'block';
+            }, 1500);
+        });
+    </script>
+    <script>
+        // Elemento global da mensagem
+        let mensagemBloqueio = null;
+        let channel = null;
+    
+        function configurarMensagem() {
+            mensagemBloqueio = document.createElement('div');
+            mensagemBloqueio.id = 'aviso-bloqueio';
+            mensagemBloqueio.innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Seu pedido ainda não foi entregue. Por favor, aguarde!</span>
+            `;
+            document.getElementById('statusAtual').appendChild(mensagemBloqueio);
+        }
+    
+        function removerBloqueios() {
+            // Remove todos os event listeners
+            window.onbeforeunload = null;
+            document.removeEventListener('keydown', bloquearRecarregamento);
+            
+            if (channel) {
+                channel.close();
+            }
+    
+            // Atualiza a mensagem para "entregue"
+            if (mensagemBloqueio) {
+                mensagemBloqueio.innerHTML = `
+                    <i class="fas fa-check-circle"></i>
+                    <span>Pedido entregue! Obrigado e volte sempre!</span>
+                `;
+                mensagemBloqueio.classList.add('entregue');
+            }
+        }
+    
+        function bloquearRecarregamento(e) {
+            if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+                e.preventDefault();
+                if (mensagemBloqueio) {
+                    mensagemBloqueio.classList.add('destaque');
+                    mensagemBloqueio.scrollIntoView({ behavior: 'smooth' });
+                    setTimeout(() => mensagemBloqueio.classList.remove('destaque'), 2000);
+                }
+            }
+        }
+    
+        function verificarStatusInicial() {
+            const pedido = JSON.parse(localStorage.getItem('pedidoAtual'));
+            
+            if (!pedido) {
+                window.location.href = 'index.html';
+                return false;
+            }
+    
+            if (pedido.status === 'ENTREGUE') {
+                removerBloqueios();
+                return false;
+            }
+    
+            return true;
+        }
+    
+        function monitorarAtualizacoes() {
+            if (typeof BroadcastChannel !== 'undefined') {
+                channel = new BroadcastChannel('atualizacao_status');
+                
+                channel.addEventListener('message', (event) => {
+                    const pedido = JSON.parse(localStorage.getItem('pedidoAtual'));
+                    if (pedido && event.data.id === pedido.id && event.data.status === 'ENTREGUE') {
+                        removerBloqueios();
+                    }
+                });
+            }
+        }
+    
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            if (verificarStatusInicial()) {
+                configurarMensagem();
+                monitorarAtualizacoes();
+                
+                window.addEventListener('beforeunload', (e) => {
+                    if (mensagemBloqueio && !mensagemBloqueio.classList.contains('entregue')) {
+                        e.preventDefault();
+                        mensagemBloqueio.classList.add('destaque');
+                        mensagemBloqueio.scrollIntoView({ behavior: 'smooth' });
+                        setTimeout(() => mensagemBloqueio.classList.remove('destaque'), 2000);
+                        return "Seu pedido ainda não foi entregue. Você será redirecionado de volta.";
+                    }
+                });
+    
+                document.addEventListener('keydown', bloquearRecarregamento);
+            }
+        });
+    </script>
+</body>
+</html>

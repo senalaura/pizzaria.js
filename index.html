@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <!-- Configurações básicas da página -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizzaria JS - Cardápio Digital</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    
+    <!-- Links para folhas de estilo -->
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Container principal -->
+    <div class="container">
+        <!-- Cabeçalho da página -->
+        <div class="cabecalho">
+            <h1 class="titulo">Pizzaria JS</h1>
+            <p class="subtitulo">As melhores pizzas da cidade</p>
+        </div>
+
+        <!-- Seção do cardápio -->
+        <div class="cardapio">
+            
+            <!-- ========== PIZZAS SALGADAS ========== -->
+            <div class="secao-cardapio">
+                <div class="cabecalho-secao" onclick="alternarSecao(this)">
+                    <i class="fas fa-pizza-slice icone-pizza"></i>
+                    <h2>Pizzas Salgadas</h2>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="conteudo-secao">
+                    <!-- Item Margherita -->
+                    <div class="item-cardapio">
+                        <div class="info-item">
+                            <div class="nome-item">
+                                <i class="fas fa-cheese"></i> Margherita
+                            </div>
+                            <div class="descricao-item">Molho de tomate, mussarela e manjericão fresco</div>
+                        </div>
+                        <span class="preco-item">R$ 25,00</span>
+                    </div>
+                    
+                    <!-- Item Calabresa -->
+                    <div class="item-cardapio">
+                        <div class="info-item">
+                            <div class="nome-item">
+                                <i class="fas fa-pepper-hot"></i> Calabresa
+                            </div>
+                            <div class="descricao-item">Molho de tomate, mussarela e calabresa fatiada</div>
+                        </div>
+                        <span class="preco-item">R$ 28,00</span>
+                    </div>
+                    
+                    <!-- Item Portuguesa -->
+                    <div class="item-cardapio">
+                        <div class="info-item">
+                            <div class="nome-item">
+                                <i class="fas fa-flag"></i> Portuguesa
+                            </div>
+                            <div class="descricao-item">Molho de tomate, presunto, ovos, cebola e azeitonas</div>
+                        </div>
+                        <span class="preco-item">R$ 30,00</span>
+                    </div>
+                    
+                    <!-- Item Quatro Queijos -->
+                    <div class="item-cardapio">
+                        <div class="info-item">
+                            <div class="nome-item">
+                                <i class="fas fa-cheese"></i> Quatro Queijos
+                            </div>
+                            <div class="descricao-item">Mussarela, provolone, parmesão e gorgonzola</div>
+                        </div>
+                        <span class="preco-item">R$ 32,00</span>
+                    </div>
+                    
+                    <!-- Item Frango Catupiry -->
+                    <div class="item-cardapio">
+                        <div class="info-item">
+                            <div class="nome-item">
+                                <i class="fas fa-drumstick-bite"></i> Frango Catupiry
+                            </div>
+                            <div class="descricao-item">Frango desfiado com catupiry e milho</div>
+                        </div>
+                        <span class="preco-item">R$ 30,00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== PIZZAS DOCES ========== -->
+            <div class="secao-cardapio">
+                <div class="cabecalho-secao" onclick="alternarSecao(this)">
+                    <i class="fas fa-ice-cream icone-doce"></i>
+                    <h2>Pizzas Doces</h2>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="conteudo-secao">
+                    <!-- Item Sorvete -->
+                    <div class="item-cardapio">
+                        <div class="info-item">
+                            <div class="nome-item">
+                                <i class="fas fa-ice-cream"></i> Sorvete
+                            </div>
+                            <div class="descricao-item">Massa doce com sorvete de creme</div>
+                        </div>
+                        <span class="preco-item">R$ 20,00</span>
+                    </div>
+                    
+                    <!-- Item Chocolate -->
+                    <div class="item-cardapio">
+                        <div class="info-item">
+                            <div class="nome-item">
+                                <i class="fas fa-candy-cane"></i> Chocolate
+                            </div>
+                            <div class="descricao-item">Chocolate ao leite com granulados</div>
+                        </div>
+                        <span class="preco-item">R$ 22,00</span>
+                    </div>
+                    
+                    <!-- Item Açaí -->
+                    <div class="item-cardapio">
+                        <div class="info-item">
+                            <div class="nome-item">
+                                <i class="fas fa-wine-bottle"></i> Açaí
+                            </div>
+                            <div class="descricao-item">Creme de açaí com banana e granola</div>
+                        </div>
+                        <span class="preco-item">R$ 24,00</span>
+                    </div>
+                    
+                    <!-- Item Banana Queijo -->
+                    <div class="item-cardapio">
+                        <div class="info-item">
+                            <div class="nome-item">
+                                <i class="fas fa-apple-alt"></i> Banana Queijo
+                            </div>
+                            <div class="descricao-item">Banana caramelizada com queijo derretido</div>
+                        </div>
+                        <span class="preco-item">R$ 26,00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== BEBIDAS ========== -->
+            <div class="secao-cardapio">
+                <div class="cabecalho-secao" onclick="alternarSecao(this)">
+                    <i class="fas fa-glass-whiskey icone-bebida"></i>
+                    <h2>Bebidas</h2>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="conteudo-secao">
+                    <!-- Item Coca-Cola -->
+                    <div class="item-cardapio">
+                        <div class="info-item">
+                            <div class="nome-item">
+                                <i class="fas fa-wine-bottle"></i> Coca-Cola
+                            </div>
+                            <div class="descricao-item">Lata 350ml</div>
+                        </div>
+                        <span class="preco-item">R$ 8,00</span>
+                    </div>
+                    
+                    <!-- Item Guaraná -->
+                    <div class="item-cardapio">
+                        <div class="info-item">
+                            <div class="nome-item">
+                                <i class="fas fa-wine-bottle"></i> Guaraná
+                            </div>
+                            <div class="descricao-item">Lata 350ml</div>
+                        </div>
+                        <span class="preco-item">R$ 7,00</span>
+                    </div>
+                    
+                    <!-- Item Fanta -->
+                    <div class="item-cardapio">
+                        <div class="info-item">
+                            <div class="nome-item">
+                                <i class="fas fa-wine-bottle"></i> Fanta
+                            </div>
+                            <div class="descricao-item">Lata 350ml</div>
+                        </div>
+                        <span class="preco-item">R$ 6,00</span>
+                    </div>
+                    
+                    <!-- Item Sprite -->
+                    <div class="item-cardapio">
+                        <div class="info-item">
+                            <div class="nome-item">
+                                <i class="fas fa-wine-bottle"></i> Sprite
+                            </div>
+                            <div class="descricao-item">Lata 350ml</div>
+                        </div>
+                        <span class="preco-item">R$ 6,00</span>
+                    </div>
+                    
+                    <!-- Item Pepsi -->
+                    <div class="item-cardapio">
+                        <div class="info-item">
+                            <div class="nome-item">
+                                <i class="fas fa-wine-bottle"></i> Pepsi
+                            </div>
+                            <div class="descricao-item">Lata 350ml</div>
+                        </div>
+                        <span class="preco-item">R$ 7,00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botão para fazer pedido -->
+        <a href="pedido.html" class="botao principal efeito-pulsar">
+            <i class="fas fa-shopping-cart"></i> Fazer Pedido
+        </a>
+        <a href="recuperar.html" class="botao secundario" style="margin-top: 1rem;">
+            <i class="fas fa-undo"></i> Recuperar Pedido
+        </a>
+    </div>
+
+    <!-- Scripts JavaScript -->
+    <script>
+        /**
+         * Alterna a visibilidade de uma seção do cardápio
+         * @param {HTMLElement} cabecalho - Elemento do cabeçalho clicado
+         */
+        function alternarSecao(cabecalho) {
+            const secao = cabecalho.parentElement;
+            const conteudo = secao.querySelector('.conteudo-secao');
+            const icone = cabecalho.querySelector('.fa-chevron-down');
+            
+            // Alterna a classe 'ativo' no conteúdo
+            conteudo.classList.toggle('ativo');
+            
+            if (conteudo.classList.contains('ativo')) {
+                icone.style.transform = 'rotate(180deg)';
+                secao.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+            } else {
+                icone.style.transform = 'rotate(0deg)';
+                secao.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+            }
+        }
+
+        // Quando o documento estiver carregado
+        document.addEventListener('DOMContentLoaded', function() {
+            // Abre a primeira seção automaticamente
+            const primeiraSecao = document.querySelector('.secao-cardapio');
+            if (primeiraSecao) {
+                const primeiroConteudo = primeiraSecao.querySelector('.conteudo-secao');
+                const primeiroIcone = primeiraSecao.querySelector('.fa-chevron-down');
+                primeiroConteudo.classList.add('ativo');
+                primeiroIcone.style.transform = 'rotate(180deg)';
+                primeiraSecao.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+            }
+        });
+    </script>
+</body>
+</html>

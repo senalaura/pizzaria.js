@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizzaria JS - Gestão Financeira</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="cabecalho">
+            <h1 class="titulo">Gestão Financeira</h1>
+            <p class="subtitulo">Controle de gastos e lucros</p>
+            <div class="graficos">
+                <canvas id="graficoFinancas"></canvas>
+            </div>
+            
+            <script>
+                // Configuração do gráfico (opcional)
+                const ctx = document.getElementById('graficoFinancas').getContext('2d');
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Receita', 'Gastos', 'Lucro', 'Reserva'],
+                        datasets: [{
+                            data: [receitaTotal, totalGastos, lucroFinal, reservaTecnica],
+                            backgroundColor: [
+                                '#2ecc71',
+                                '#e74c3c',
+                                '#3498db',
+                                '#f39c12'
+                            ]
+                        }]
+                    }
+                });
+            </script>
+        </div>
+
+        <div class="resumo-financeiro">
+            <div class="card-financeiro receita">
+                <h3><i class="fas fa-money-bill-wave"></i> Receita Total</h3>
+                <div class="valor" id="receitaTotal">R$ 0,00</div>
+            </div>
+            
+            <div class="card-financeiro gastos">
+                <h3><i class="fas fa-receipt"></i> Gastos</h3>
+                <div class="valor" id="totalGastos">R$ 0,00</div>
+                <div class="detalhes">
+                    <span>Pizzas (47%): <span id="gastosPizzas">R$ 0,00</span></span>
+                    <span>Bebidas (60%): <span id="gastosBebidas">R$ 0,00</span></span>
+                </div>
+            </div>
+            
+            <div class="card-financeiro lucro">
+                <h3><i class="fas fa-chart-line"></i> Lucro Líquido</h3>
+                <div class="valor" id="lucroLiquido">R$ 0,00</div>
+            </div>
+            
+            <div class="card-financeiro reserva">
+                <h3><i class="fas fa-piggy-bank"></i> Reserva Técnica (10%)</h3>
+                <div class="valor" id="reservaTecnica">R$ 0,00</div>
+            </div>
+        </div>
+
+        <div class="acoes">
+            <a href="pedidos.html" class="botao secundario">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+            <a href="estoque.html" class="botao secundario">
+                <i class="fas fa-warehouse"></i> Ver Estoque
+            </a>
+            <button onclick="atualizarDados()" class="botao principal">
+                <i class="fas fa-sync-alt"></i> Atualizar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Configurações
+        const PERCENTUAL_GASTO_PIZZA = 47;
+        const PERCENTUAL_GASTO_BEBIDA = 60;
+        const PERCENTUAL_RESERVA = 10;
+
+        // Função principal
+        function calcularFinanceiro() {
+            const pedidos = JSON.parse(localStorage.getItem('todosPedidos')) || [];
+            const totaisAcumulados = JSON.parse(localStorage.getItem('totaisAcumulados')) || {
+                receitaTotal: 0,
+                gastosPizzas: 0,
+                gastosBebidas: 0,
+                totalGastos: 0,
+                lucroLiquido: 0,
+                reservaTecnica: 0
+            };
+
+            // Calcula apenas os valores dos pedidos ativos
+            let receitaAtual = 0;
+            let gastosPizzasAtual = 0;
+            let gastosBebidasAtual = 0;
+    
+            pedidos.forEach(pedido => {
+                receitaAtual += parseFloat(pedido.total);
+        
+                pedido.pizzas.forEach(pizza => {
+                    gastosPizzasAtual += parseFloat(pizza.preco) * (PERCENTUAL_GASTO_PIZZA / 100);
+                });
+        
+                gastosBebidasAtual += parseFloat(pedido.bebida.preco) * (PERCENTUAL_GASTO_BEBIDA / 100);
+            });
+    
+            const totalGastosAtual = gastosPizzasAtual + gastosBebidasAtual;
+            const lucroLiquidoAtual = receitaAtual - totalGastosAtual;
+            const reservaTecnicaAtual = lucroLiquidoAtual * (PERCENTUAL_RESERVA / 100);
+            const lucroFinalAtual = lucroLiquidoAtual - reservaTecnicaAtual;
+    
+            // Atualiza a tela com os valores acumulados + atuais
+            document.getElementById('receitaTotal').textContent = `R$ ${(totaisAcumulados.receitaTotal + receitaAtual).toFixed(2)}`;
+            document.getElementById('totalGastos').textContent = `R$ ${(totaisAcumulados.totalGastos + totalGastosAtual).toFixed(2)}`;
+            document.getElementById('gastosPizzas').textContent = `R$ ${(totaisAcumulados.gastosPizzas + gastosPizzasAtual).toFixed(2)}`;
+            document.getElementById('gastosBebidas').textContent = `R$ ${(totaisAcumulados.gastosBebidas + gastosBebidasAtual).toFixed(2)}`;
+            document.getElementById('lucroLiquido').textContent = `R$ ${(totaisAcumulados.lucroLiquido + lucroFinalAtual).toFixed(2)}`;
+            document.getElementById('reservaTecnica').textContent = `R$ ${(totaisAcumulados.reservaTecnica + reservaTecnicaAtual).toFixed(2)}`;
+        }
+        
+        // Atualização em tempo real
+        function configurarAtualizacaoAutomática() {
+            if (typeof BroadcastChannel !== 'undefined') {
+                const channel = new BroadcastChannel('atualizacao_financeira');
+                channel.addEventListener('message', calcularFinanceiro);
+            }
+            
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'todosPedidos') {
+                    calcularFinanceiro();
+                }
+            });
+        }
+        
+        // Botão manual
+        window.atualizarDados = calcularFinanceiro;
+        
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            calcularFinanceiro();
+            configurarAtualizacaoAutomática();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Pedido</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="cabecalho">
+            <h1 class="titulo">Recuperar Pedido</h1>
+            <p class="subtitulo">Informe seu nome para continuar</p>
+        </div>
+
+        <div class="grupo-formulario">
+            <label for="nomeCliente" class="rotulo">
+                <i class="fas fa-user"></i> Nome do Cliente:
+            </label>
+            <input type="text" id="nomeCliente" class="entrada-pedido" placeholder="Digite o nome que você usou no pedido">
+        </div>
+
+        <div id="mensagemFeedback" class="mensagem-feedback erro" style="display: none;"></div>
+
+        <button class="botao principal" onclick="recuperarPedido()">
+            <i class="fas fa-search"></i> Recuperar
+        </button>
+
+        <a href="index.html" class="botao secundario" style="margin-top: 1rem;">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <script>
+        function recuperarPedido() {
+            const nome = document.getElementById('nomeCliente').value.trim().toLowerCase();
+            const pedidos = JSON.parse(localStorage.getItem('todosPedidos')) || [];
+            const pedido = pedidos.find(p => p.nomeCliente.toLowerCase() === nome && p.status !== 'ENTREGUE');
+
+            const feedback = document.getElementById('mensagemFeedback');
+            if (!pedido) {
+                feedback.textContent = 'Pedido não encontrado ou já foi entregue.';
+                feedback.classList.remove('sucesso');
+                feedback.classList.add('erro');
+                feedback.style.display = 'block';
+                return;
+            }
+
+            localStorage.setItem('pedidoAtual', JSON.stringify(pedido));
+            window.location.href = 'resumo.html';
+        }
+    </script>
+</body>
+</html>

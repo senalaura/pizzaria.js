@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizzaria JS - Monte Seu Pedido</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="cabecalho">
+            <h1 class="titulo">Monte seu Pedido</h1>
+            <p class="subtitulo">Personalize suas pizzas</p>
+        </div>
+
+        <form id="formularioPedido">
+            <div id="areaPizzas">
+                <!-- Pizza inicial -->
+                <div class="card-pizza">
+                    <div class="cabecalho-pizza">
+                        <h3>Pizza 1</h3>
+                        <button type="button" class="botao remover-pizza" disabled>
+                            <i class="fas fa-times"></i> Remover
+                        </button>
+                    </div>
+                    <div class="grupo-formulario">
+                        <label for="sabor1" class="rotulo">
+                            <i class="fas fa-pizza-slice"></i> Sabor:
+                        </label>
+                        <select id="sabor1" class="entrada-pedido selecao" required>
+                            <option value="" disabled selected>Escolha um sabor</option>
+                            <option value="margherita">Margherita</option>
+                            <option value="calabresa">Calabresa</option>
+                            <option value="portuguesa">Portuguesa</option>
+                            <option value="quatro-queijos">Quatro Queijos</option>
+                            <option value="frango-catupiry">Frango com Catupiry</option>
+                            <option value="sorvete">Sorvete</option>
+                            <option value="chocolate">Chocolate</option>
+                            <option value="acai">Açaí</option>
+                            <option value="banana-queijo">Banana com Queijo</option>
+                        </select>
+                    </div>
+                    <div class="grupo-formulario">
+                        <label for="tamanho1" class="rotulo">
+                            <i class="fas fa-ruler"></i> Tamanho:
+                        </label>
+                        <select id="tamanho1" class="entrada-pedido selecao" required>
+                            <option value="" disabled selected>Escolha um tamanho</option>
+                            <option value="pequena">Pequena</option>
+                            <option value="media">Média</option>
+                            <option value="grande">Grande</option>
+                        </select>
+                    </div>
+                    <div class="grupo-formulario">
+                        <label for="borda1" class="rotulo">
+                            <i class="fas fa-border-style"></i> Borda:
+                        </label>
+                        <select id="borda1" class="entrada-pedido selecao" required>
+                            <option value="" disabled selected>Escolha uma borda</option>
+                            <option value="catupiry">Catupiry</option>
+                            <option value="cheddar">Cheddar</option>
+                            <option value="queijo">Queijo</option>
+                            <option value="requeijao">Requeijão</option>
+                            <option value="chocolate">Chocolate</option>
+                            <option value="doce-de-leite">Doce de Leite</option>
+                            <option value="nutella">Nutella</option>
+                            <option value="sem-borda">Sem Borda</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" id="botaoAdicionarPizza" class="botao secundario">
+                <i class="fas fa-plus"></i> Adicionar outra pizza
+            </button>
+
+            <div class="grupo-formulario">
+                <label for="nomeCliente" class="rotulo">
+                    <i class="fas fa-user"></i> Nome do Cliente:
+                </label>
+                <input type="text" id="nomeCliente" class="entrada-pedido" required>
+            </div>
+
+            <div class="grupo-formulario">
+                <label for="bebida" class="rotulo">
+                    <i class="fas fa-glass-whiskey"></i> Bebida:
+                </label>
+                <select id="bebida" class="entrada-pedido selecao" required>
+                    <option value="" disabled selected>Escolha uma bebida</option>
+                    <option value="coca-cola">Coca-Cola</option>
+                    <option value="guarana">Guaraná</option>
+                    <option value="fanta">Fanta</option>
+                    <option value="sprite">Sprite</option>
+                    <option value="pepsi">Pepsi</option>
+                    <option value="sem-refrigerante">Sem refrigerante</option>
+                </select>
+            </div>
+
+            <div class="grupo-formulario">
+                <label for="cidade" class="rotulo">
+                    <i class="fas fa-map-marker-alt"></i> Cidade para entrega:
+                </label>
+                <select id="cidade" class="entrada-pedido selecao" required>
+                    <option value="" disabled selected>Selecione sua cidade</option>
+                    <option value="Brasília">Brasília</option>
+                    <option value="Gama">Gama</option>
+                    <option value="Taguatinga">Taguatinga</option>
+                    <option value="Brazlândia">Brazlândia</option>
+                    <option value="Sobradinho">Sobradinho</option>
+                    <option value="Planaltina">Planaltina</option>
+                    <option value="Paranoá">Paranoá</option>
+                    <option value="Núcleo Bandeirante">Núcleo Bandeirante</option>
+                    <option value="Ceilândia">Ceilândia</option>
+                    <option value="Guará">Guará</option>
+                </select>
+            </div>
+
+            <div class="item-resumo">
+                <span>Taxa de entrega:</span>
+                <span id="taxaEntrega">R$ 0,00</span>
+            </div>
+
+            <div class="item-resumo resumo-total">
+                <span>Total do pedido:</span>
+                <span id="totalPedido">R$ 0,00</span>
+            </div>
+
+            <div id="contadorPizzas" class="item-resumo">1 pizza</div>
+
+            <div id="mensagemFeedback" class="mensagem-feedback"></div>
+
+            <button type="submit" class="botao principal">
+                <i class="fas fa-check"></i> Finalizar Pedido
+            </button>
+        </form>
+    </div>
+
+    <div class="container-foguete">
+        <div class="foguete">🚀</div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    alert("Por favor, informe seu nome completo (nome e sobrenome) no campo de Nome do Cliente.");
+  });
+</script>
+</body>
+</html>

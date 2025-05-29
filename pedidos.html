@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizzaria JS - Pedidos</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <script>
+        //Restante do seu código existente...
+        document.addEventListener('DOMContentLoaded', function() {
+            // Seu código atual continua aqui
+        });
+    </script>
+    <div class="container">
+        <div class="cabecalho">
+            <h1 class="titulo">Painel de Pedidos</h1>
+            <p class="subtitulo" id="statusAtualizacao">Atualizado em: ${new Date().toLocaleTimeString()}</p>
+            <button id="limparEntregues" class="botao pequeno perigo">
+                <i class="fas fa-broom"></i> Limpar Pedidos Entregues
+            </button>
+        </div>
+
+        <!-- Adicionar após o cabeçalho -->
+    <div class="filtros-pedidos">
+    <div class="grupo-formulario">
+        <label for="filtroStatus" class="rotulo">
+            <i class="fas fa-filter"></i> Filtrar por Status:
+        </label>
+        <select id="filtroStatus" class="entrada-pedido selecao" onchange="filtrarPedidos()">
+            <option value="TODOS">Todos</option>
+            <option value="RECEBIDO">Recebidos</option>
+            <option value="PREPARANDO">Preparando</option>
+            <option value="ENVIADO">Enviados</option>
+            <option value="ENTREGUE">Entregues</option>
+        </select>
+    </div>
+    
+    <div class="grupo-formulario">
+        <label for="buscaCliente" class="rotulo">
+            <i class="fas fa-search"></i> Buscar Cliente:
+        </label>
+        <input type="text" id="buscaCliente" class="entrada-pedido" 
+               placeholder="Digite o nome do cliente" oninput="filtrarPedidos()">
+    </div>
+    </div>
+
+        <div id="listaPedidos">
+            <div class="mensagem-feedback" id="semPedidos">
+                <i class="fas fa-info-circle"></i> Nenhum pedido no momento
+            </div>
+        </div>
+
+        <a href="financeiro.html" class="botao secundario">
+            <i class="fas fa-chart-pie"></i> Financeiro
+        </a>
+
+        <a href="index.html" class="botao principal">
+            <i class="fas fa-home"></i> Voltar ao início
+        </a>
+    </div>
+
+    <script>
+        // Variável para o canal de comunicação
+        let pedidosChannel;
+        
+        // Função principal para carregar pedidos
+        function carregarPedidos() {
+            const pedidos = JSON.parse(localStorage.getItem('todosPedidos')) || [];
+            const listaPedidos = document.getElementById('listaPedidos');
+            
+            document.getElementById('statusAtualizacao').textContent = 
+                `Atualizado em: ${new Date().toLocaleTimeString()}`;
+            
+            if (pedidos.length === 0) {
+                document.getElementById('semPedidos').style.display = 'block';
+                listaPedidos.innerHTML = '';
+                return;
+            }
+            
+            document.getElementById('semPedidos').style.display = 'none';
+            listaPedidos.innerHTML = '';
+            
+            // Ordena por status e data
+            const pedidosOrdenados = [...pedidos].sort((a, b) => {
+                const ordemStatus = ['RECEBIDO', 'PREPARANDO', 'ENVIADO', 'ENTREGUE'];
+                const diffStatus = ordemStatus.indexOf(a.status) - ordemStatus.indexOf(b.status);
+                return diffStatus !== 0 ? diffStatus : new Date(b.dataPedido) - new Date(a.dataPedido);
+            });
+
+            pedidosOrdenados.forEach(pedido => {
+                const cardPedido = document.createElement('div');
+                cardPedido.className = 'card-pedido';
+                cardPedido.setAttribute('data-id', pedido.id);
+                
+                cardPedido.innerHTML = `
+                    <div class="cabecalho-pedido">
+                        <h3>${pedido.nomeCliente} <small>#${pedido.id.toString().slice(-4)}</small></h3>
+                        <span class="status-pedido ${pedido.status.toLowerCase()}">${pedido.status}</span>
+                        <span class="data-pedido">${new Date(pedido.dataPedido).toLocaleString()}</span>
+                    </div>
+                    
+                    <div class="detalhes-pedido">
+                        <!-- Pizzas -->
+                        <div class="grupo-detalhes">
+                            <h4><i class="fas fa-pizza-slice"></i> Pizzas (${pedido.pizzas.length})</h4>
+                            ${pedido.pizzas.map(pizza => `
+                                <div class="item-detalhe">
+                                    <span>${pizza.sabor} - ${pizza.tamanho} (${pizza.borda})</span>
+                                    <span>R$ ${pizza.preco}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <!-- Bebida -->
+                        <div class="grupo-detalhes">
+                            <h4><i class="fas fa-glass-whiskey"></i> Bebida</h4>
+                            <div class="item-detalhe">
+                                <span>${pedido.bebida.nome}</span>
+                                <span>R$ ${pedido.bebida.preco}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Informações -->
+                        <div class="grupo-detalhes">
+                            <div class="item-detalhe">
+                                <span><i class="fas fa-map-marker-alt"></i> Entrega</span>
+                                <span>${pedido.cidade}</span>
+                            </div>
+                            <div class="item-detalhe">
+                                <span><i class="fas fa-truck"></i> Taxa</span>
+                                <span>R$ ${pedido.taxaEntrega}</span>
+                            </div>
+                            <div class="item-detalhe resumo-total">
+                                <span><i class="fas fa-receipt"></i> Total</span>
+                                <span>R$ ${pedido.total}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="acoes-pedido">
+                        ${pedido.status === 'RECEBIDO' ? `
+                            <button class="botao pequeno principal" onclick="atualizarStatus(${pedido.id}, 'PREPARANDO')">
+                                <i class="fas fa-utensils"></i> Preparar
+                            </button>
+                        ` : ''}
+                        ${pedido.status === 'PREPARANDO' ? `
+                            <button class="botao pequeno principal" onclick="atualizarStatus(${pedido.id}, 'ENVIADO')">
+                                <i class="fas fa-motorcycle"></i> Enviar
+                            </button>
+                        ` : ''}
+                        ${pedido.status === 'ENVIADO' ? `
+                            <button class="botao pequeno principal" onclick="atualizarStatus(${pedido.id}, 'ENTREGUE')">
+                                <i class="fas fa-check"></i> Entregue
+                            </button>
+                        ` : ''}
+                        ${pedido.status === 'ENTREGUE' ? `
+                            <button class="botao pequeno perigo" onclick="excluirPedido(${pedido.id})">
+                                <i class="fas fa-trash"></i> Excluir
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+                
+                listaPedidos.appendChild(cardPedido);
+            });
+        }
+
+        // Funções de apoio (manter as existentes)
+        function atualizarStatus(id, novoStatus) {
+            const pedidos = JSON.parse(localStorage.getItem('todosPedidos')) || [];
+            const pedidoIndex = pedidos.findIndex(p => p.id === id);
+    
+            if (pedidoIndex !== -1) {
+                pedidos[pedidoIndex].status = novoStatus;
+                localStorage.setItem('todosPedidos', JSON.stringify(pedidos));
+        
+                // Notificar atualização
+                if (typeof BroadcastChannel !== 'undefined') {
+                    const channel = new BroadcastChannel('atualizacao_status');
+                    channel.postMessage({
+                        id: id,
+                        status: novoStatus
+                    });
+                    setTimeout(() => channel.close(), 100);
+                }
+        
+                carregarPedidos();
+            }
+        }
+
+        function excluirPedido(id) {
+            if (confirm('Tem certeza que deseja excluir este pedido?')) {
+                const pedidos = JSON.parse(localStorage.getItem('todosPedidos')) || [];
+                const pedidoExcluido = pedidos.find(p => p.id === id);
+        
+                if (pedidoExcluido) {
+                    // Calcula os valores do pedido excluído
+                    let gastosPizzas = 0;
+                    pedidoExcluido.pizzas.forEach(pizza => {
+                        gastosPizzas += parseFloat(pizza.preco) * (PERCENTUAL_GASTO_PIZZA / 100);
+                    });
+            
+                    const gastosBebidas = parseFloat(pedidoExcluido.bebida.preco) * (PERCENTUAL_GASTO_BEBIDA / 100);
+                    const totalGastos = gastosPizzas + gastosBebidas;
+                    const receita = parseFloat(pedidoExcluido.total);
+                    const lucroLiquido = receita - totalGastos;
+                    const reservaTecnica = lucroLiquido * (PERCENTUAL_RESERVA / 100);
+            
+                    // Atualiza os totais acumulados
+                    const totaisAcumulados = JSON.parse(localStorage.getItem('totaisAcumulados')) || {
+                        receitaTotal: 0,
+                        gastosPizzas: 0,
+                        gastosBebidas: 0,
+                        totalGastos: 0,
+                        lucroLiquido: 0,
+                        reservaTecnica: 0
+                    };
+            
+                    totaisAcumulados.receitaTotal += receita;
+                    totaisAcumulados.gastosPizzas += gastosPizzas;
+                    totaisAcumulados.gastosBebidas += gastosBebidas;
+                    totaisAcumulados.totalGastos += totalGastos;
+                    totaisAcumulados.lucroLiquido += (lucroLiquido - reservaTecnica);
+                    totaisAcumulados.reservaTecnica += reservaTecnica;
+            
+                    localStorage.setItem('totaisAcumulados', JSON.stringify(totaisAcumulados));
+            
+                    // Remove o pedido da lista
+                    const novosPedidos = pedidos.filter(p => p.id !== id);
+                    localStorage.setItem('todosPedidos', JSON.stringify(novosPedidos));
+                    
+                    // Animação de remoção
+                    const card = document.querySelector(`.card-pedido[data-id="${id}"]`);
+                    if (card) {
+                        card.classList.add('removing');
+                        setTimeout(() => carregarPedidos(), 500);
+                    } else {
+                        carregarPedidos();
+                    }
+                }
+            }
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            // Configurar BroadcastChannel
+            if (typeof BroadcastChannel !== 'undefined') {
+                pedidosChannel = new BroadcastChannel('pedidos_channel');
+                
+                pedidosChannel.addEventListener('message', (event) => {
+                    if (event.data.type === 'novo_pedido') {
+                        // Adiciona o novo pedido e recarrega
+                        const pedidos = JSON.parse(localStorage.getItem('todosPedidos')) || [];
+                        pedidos.unshift(event.data.pedido);
+                        localStorage.setItem('todosPedidos', JSON.stringify(pedidos));
+                        carregarPedidos();
+                    } else if (event.data.type === 'status_alterado') {
+                        // Atualiza status se necessário
+                        const pedidos = JSON.parse(localStorage.getItem('todosPedidos')) || [];
+                        const pedido = pedidos.find(p => p.id === event.data.id);
+                        if (pedido) {
+                            pedido.status = event.data.novoStatus;
+                            localStorage.setItem('todosPedidos', JSON.stringify(pedidos));
+                            carregarPedidos();
+                        }
+                    }
+                });
+            }
+            
+            // Fallback para eventos de storage
+            window.addEventListener('storage', (event) => {
+                if (event.key === 'todosPedidos' || event.key === 'ultimaAtualizacao') {
+                    carregarPedidos();
+                }
+            });
+            
+            // Carregar pedidos inicialmente
+            carregarPedidos();
+            
+            // Atualizar a cada 30 segundos (fallback)
+            setInterval(carregarPedidos, 30000);
+        });
+
+        function limparPedidosEntregues() {
+    if (confirm('Deseja realmente remover TODOS os pedidos marcados como ENTREGUE?\nEsta ação não pode ser desfeita!')) {
+        const pedidos = JSON.parse(localStorage.getItem('todosPedidos')) || [];
+        
+        // Filtra apenas os pedidos NÃO entregues
+        const pedidosAtivos = pedidos.filter(pedido => pedido.status !== 'ENTREGUE');
+        
+        // Atualiza o localStorage
+        localStorage.setItem('todosPedidos', JSON.stringify(pedidosAtivos));
+        
+        // Feedback visual
+        const feedback = document.createElement('div');
+        feedback.className = 'mensagem-feedback sucesso';
+        feedback.innerHTML = `<i class="fas fa-check-circle"></i> ${pedidos.length - pedidosAtivos.length} pedidos foram removidos`;
+        document.querySelector('.container').prepend(feedback);
+        
+        setTimeout(() => {
+            feedback.classList.add('fade-out');
+            setTimeout(() => feedback.remove(), 500);
+        }, 3000);
+        
+        // Recarrega a lista
+        carregarPedidos();
+    }
+}
+
+// Adicione este evento no final do DOMContentLoaded:
+document.getElementById('limparEntregues').addEventListener('click', limparPedidosEntregues);
+    </script>
+    <script>
+    // Configuração do listener em tempo real
+    function configurarAtualizacaoTempoReal() {
+        // Método 1: BroadcastChannel
+        if (typeof BroadcastChannel !== 'undefined') {
+            const channel = new BroadcastChannel('pedidos_atualizados');
+            channel.addEventListener('message', () => {
+                carregarPedidos(); // Função que já existe
+            });
+        }
+        
+        // Método 2: Evento de storage (fallback)
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'ultimaAtualizacao') {
+                carregarPedidos();
+            }
+        });
+    }
+
+    // Inicializa quando a página carrega
+    document.addEventListener('DOMContentLoaded', () => {
+        configurarAtualizacaoTempoReal();
+        carregarPedidos(); // Sua função existente
+    });
+
+    // Adicionar função de filtro
+    function filtrarPedidos() {
+    const statusSelecionado = document.getElementById('filtroStatus').value;
+    const termoBusca = document.getElementById('buscaCliente').value.toLowerCase();
+    
+    const cards = document.querySelectorAll('.card-pedido');
+    cards.forEach(card => {
+        const status = card.querySelector('.status-pedido').textContent;
+        const cliente = card.querySelector('h3').textContent.toLowerCase();
+        
+        const statusMatch = statusSelecionado === 'TODOS' || status === statusSelecionado;
+        const buscaMatch = cliente.includes(termoBusca);
+        
+        card.style.display = statusMatch && buscaMatch ? 'block' : 'none';
+    });
+}
+</script>
+</body>
+</html>

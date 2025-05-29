@@ -1,0 +1,219 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estoque - Pizzaria JS</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+      .lista-estoque, .lista-consumo {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .item-estoque, .item-consumo {
+        background: #fff;
+        border: 1px solid #ccc;
+        padding: 1rem;
+        border-radius: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      }
+
+      .item-estoque span {
+        flex: 1;
+      }
+
+      .item-estoque input {
+        width: 80px;
+        padding: 0.4rem;
+        font-size: 0.9rem;
+        border: 1px solid #aaa;
+        border-radius: 4px;
+        margin-right: 0.5rem;
+      }
+
+      .item-estoque button {
+        padding: 0.4rem 0.8rem;
+        background-color: #2ecc71;
+        border: none;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .item-estoque button:hover {
+        background-color: #27ae60;
+      }
+    </style>
+    
+<body>
+  <div class="container">
+    <div class="cabecalho">
+      <h1 class="titulo">Controle de Estoque</h1>
+      <p class="subtitulo">Ingredientes consumidos e disponíveis</p>
+    </div>
+
+    <div class="grupo-formulario">
+      <h3>📦 Estoque Atual</h3>
+      
+    <div id="listaEstoque" class="lista-estoque melhorada" style="margin-bottom: 2rem;"></div>
+    
+    </div>
+
+    <div class="grupo-formulario">
+      <h3>🔥 Ingredientes Consumidos</h3>
+      
+    <div id="ingredientesConsumidos" class="lista-consumo melhorada"></div>
+    
+    </div>
+
+    <a href="financeiro.html" class="botao secundario" style="margin-top: 1.5rem;">
+      <i class="fas fa-arrow-left"></i> Voltar ao Financeiro
+    </a>
+  </div>
+
+  <script>
+    const estoquePadrao = {
+      "molho de tomate": 10000,
+      "mussarela": 8000,
+      "manjericão": 300,
+      "calabresa": 3000,
+      "presunto": 2000,
+      "ovos": 100,
+      "cebola": 1500,
+      "azeitona": 1000,
+      "provolone": 1500,
+      "parmesão": 1500,
+      "gorgonzola": 1200,
+      "frango": 2500,
+      "catupiry": 2000,
+      "milho": 1500,
+      "sorvete": 2000,
+      "chocolate": 2000,
+      "banana": 1000,
+      "granola": 500,
+      "açaí": 1500,
+      "doce de leite": 1000,
+      "nutella": 1000,
+      "queijo": 2000,
+      "cheddar": 1500,
+      "requeijão": 1500,
+      "refrigerante": 500
+    };
+
+    const ingredientesPorPizza = {
+      "Margherita": { "molho de tomate": 100, "mussarela": 120, "manjericão": 5 },
+      "Calabresa": { "molho de tomate": 100, "mussarela": 100, "calabresa": 80 },
+      "Portuguesa": { "molho de tomate": 100, "presunto": 60, "mussarela": 80, "ovos": 1, "cebola": 30, "azeitona": 10 },
+      "Quatro Queijos": { "mussarela": 50, "provolone": 50, "parmesão": 50, "gorgonzola": 50 },
+      "Frango Catupiry": { "frango": 100, "catupiry": 50, "milho": 30 },
+      "Sorvete": { "sorvete": 150 },
+      "Chocolate": { "chocolate": 100 },
+      "Açaí": { "açaí": 150, "banana": 50, "granola": 30 },
+      "Banana Queijo": { "banana": 100, "queijo": 50 }
+    };
+
+    const ingredientesPorBorda = {
+      "Catupiry": { "catupiry": 30 },
+      "Cheddar": { "cheddar": 30 },
+      "Queijo": { "queijo": 30 },
+      "Requeijão": { "requeijão": 30 },
+      "Chocolate": { "chocolate": 30 },
+      "Doce de Leite": { "doce de leite": 30 },
+      "Nutella": { "nutella": 30 },
+      "Sem Borda": {}
+    };
+
+    const ingredientesPorBebida = {
+      "Coca-Cola": { "refrigerante": 1 },
+      "Guaraná": { "refrigerante": 1 },
+      "Fanta": { "refrigerante": 1 },
+      "Sprite": { "refrigerante": 1 },
+      "Pepsi": { "refrigerante": 1 },
+      "Sem Refrigerante": {}
+    };
+
+    function calcularConsumo(pedidos) {
+      const consumo = {};
+      pedidos.forEach(pedido => {
+        pedido.pizzas.forEach(pizza => {
+          const ingPizza = ingredientesPorPizza[pizza.sabor] || {};
+          for (const ing in ingPizza) {
+            consumo[ing] = (consumo[ing] || 0) + ingPizza[ing];
+          }
+          const ingBorda = ingredientesPorBorda[pizza.borda] || {};
+          for (const ing in ingBorda) {
+            consumo[ing] = (consumo[ing] || 0) + ingBorda[ing];
+          }
+        });
+        const ingBebida = ingredientesPorBebida[pedido.bebida.nome] || {};
+        for (const ing in ingBebida) {
+          consumo[ing] = (consumo[ing] || 0) + ingBebida[ing];
+        }
+      });
+      return consumo;
+    }
+
+    function renderEstoque(consumo) {
+      const ulEstoque = document.getElementById("listaEstoque");
+      const ulConsumido = document.getElementById("ingredientesConsumidos");
+      ulEstoque.innerHTML = "";
+      ulConsumido.innerHTML = "";
+
+      for (const item in estoquePadrao) {
+        const usado = consumo[item] || 0;
+        const restante = estoquePadrao[item] - usado;
+        
+        const div = document.createElement("div");
+        div.className = "item-estoque";
+        div.innerHTML = `
+          <span><strong>${item}</strong>: ${restante} disponíveis <br> <small>${usado} usados</small></span>
+          <input type="number" data-item="${item}" placeholder="+ quantidade">
+          <button class="adicionar-estoque" data-item="${item}">Adicionar</button>
+        `;
+        ulEstoque.appendChild(div);
+    
+
+        if (usado > 0) {
+          
+          const divC = document.createElement("div");
+          divC.className = "item-consumo";
+          divC.innerHTML = `<strong>${item}</strong>: ${usado}`;
+          ulConsumido.appendChild(divC);
+    
+        }
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const pedidos = JSON.parse(localStorage.getItem("todosPedidos")) || [];
+      const consumo = calcularConsumo(pedidos);
+      
+      renderEstoque(consumo);
+
+      // Permitir recarga de página sem perder dados temporários
+      document.querySelectorAll("button.adicionar-estoque").forEach(btn => {
+        btn.addEventListener("click", e => {
+          const item = btn.dataset.item;
+          const input = document.querySelector(`input[data-item='${item}']`);
+          const quantidade = parseFloat(input.value);
+          if (!isNaN(quantidade) && quantidade > 0) {
+            estoquePadrao[item] += quantidade;
+            localStorage.setItem("estoqueExtra", JSON.stringify({ ...(JSON.parse(localStorage.getItem("estoqueExtra")) || {}), [item]: estoquePadrao[item] }));
+            location.reload();
+          }
+        });
+      });
+    
+    });
+  </script>
+</body>
+</html>
